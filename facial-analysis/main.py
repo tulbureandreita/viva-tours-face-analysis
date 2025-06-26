@@ -7,7 +7,7 @@ from models import SCRFD, Attribute
 from utils.helpers import Face, draw_face_info
 
 warnings.filterwarnings("ignore")
-
+run_number = 7
 
 def load_models(detection_model_path: str, attribute_model_path: str):
     """Loads the detection and attribute models.
@@ -117,7 +117,6 @@ def main():
         help='Path to the attribute model weights file'
     )
     folder_name = "assets/dev-images/"
-    run_number = 6
     args = parser.parse_args()
     for filename in os.listdir(folder_name):
         if not filename.lower().endswith((".jpg", ".jpeg", ".png", ".bmp")):
