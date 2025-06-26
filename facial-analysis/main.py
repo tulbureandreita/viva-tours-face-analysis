@@ -40,9 +40,18 @@ def inference_image(detection_model, attribute_model, frame, save_output):
         print("Failed to load image")
         return
 
-    process_frame(detection_model, attribute_model, frame)
+    face = process_frame(detection_model, attribute_model, frame)
     if save_output:
         cv2.imwrite(save_output, frame)
+    if face is not None:
+        x1, y1, x2, y2 = map(int, face.bbox)
+        width = x2 - x1
+        height = y2 - y1
+        print(width, height)
+        cropped = frame[y1:y2, x1:x2]
+        save_output = save_output.removesuffix(".jpg")
+        cv2.imwrite(save_output+"_crop.jpg", cropped)
+        print(face.bbox)
 
 
 
@@ -60,6 +69,8 @@ def process_frame(detection_model, attribute_model, frame):
         gender = attribute_model.get(frame, bbox)
         face = Face(kps=keypoints, bbox=bbox, gender=gender)
         draw_face_info(frame, face)
+
+        return face
 
 
 def run_face_analysis(detection_weights, attribute_weights, frame, save_output=None):
@@ -106,7 +117,7 @@ def main():
         help='Path to the attribute model weights file'
     )
     folder_name = "assets/dev-images/"
-    run_number = 3
+    run_number = 6
     args = parser.parse_args()
     for filename in os.listdir(folder_name):
         if not filename.lower().endswith((".jpg", ".jpeg", ".png", ".bmp")):
