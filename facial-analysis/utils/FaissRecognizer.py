@@ -43,6 +43,7 @@ class FaissRecognizer:
         self.next_id += 1
         # make folder for them
         os.makedirs(os.path.join(self.dir_path, f"{person_uuid}"), exist_ok=True)
+        # to implement saving the index and map after adding a new person/ persistence
         #self._save() # Save index and map after adding a new person if you need persistence
 
         return person_uuid, Distance
