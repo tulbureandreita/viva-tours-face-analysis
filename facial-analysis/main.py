@@ -9,7 +9,7 @@ from utils.FaissRecognizer import FaissRecognizer
 
 warnings.filterwarnings("ignore")
 run_number = 9
-FACE_RECOGNIZER_THRESHOLD = 0.416
+FACE_RECOGNIZER_THRESHOLD = 0.417
 MAX_SIDE_FOR_DETECTION = 2560
 
 def load_models(detection_model_path: str, attribute_model_path: str, emb_model_path: str):
