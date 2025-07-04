@@ -9,8 +9,9 @@ from utils.FaissRecognizer import FaissRecognizer
 
 
 warnings.filterwarnings("ignore")
-run_number = 2
-FACE_RECOGNIZER_THRESHOLD = 0.7
+run_number = 6
+FACE_RECOGNIZER_THRESHOLD = 0.416
+MAX_SIDE_FOR_DETECTION = 2560
 
 def load_models(detection_model_path: str, attribute_model_path: str, emb_model_path: str):
     """Loads the detection and attribute models.
@@ -130,7 +131,6 @@ def main():
         orig_img = cv2.imread(image_path)
         if orig_img is None:
             raise FileNotFoundError(f"Could not load {image_path}.jpg")
-        MAX_SIDE_FOR_DETECTION = 1280
         small_img, sx, sy = resize_with_aspect(img=orig_img, max_side=MAX_SIDE_FOR_DETECTION)
         filename = filename.replace(".jpg", "").replace(".jpeg", "").replace(".png", "").replace(".bmp", "")
         print("_________________________________")
