@@ -1,6 +1,5 @@
 import cv2
 import warnings
-import numpy as np
 import os
 from models import SCRFD, Attribute
 from utils.ArcFaceEmbedding import ArcFaceEmbedding
@@ -9,7 +8,7 @@ from utils.FaissRecognizer import FaissRecognizer
 
 
 warnings.filterwarnings("ignore")
-run_number = 6
+run_number = 9
 FACE_RECOGNIZER_THRESHOLD = 0.416
 MAX_SIDE_FOR_DETECTION = 2560
 
@@ -33,57 +32,55 @@ def load_models(detection_model_path: str, attribute_model_path: str, emb_model_
 
 
 def inference_image(detection_model, attribute_model, emb_model, frame, save_output, face_recognizer):
-    """Processes a single image for face detection and attributes.
-    Args:
-        detection_model (SCRFD): The face detection model.
-        attribute_model (Attribute): The attribute detection model.
-        emb_model
-        image_path (str): Path to the input image.
-        save_output (str): Path to save the output image.
     """
-
+    Processes an image, finds all faces, and lets the recognizer handle the assignment.
+    """
     if frame is None:
         print("Failed to load image")
         return
 
-    face = process_frame(detection_model=detection_model, attribute_model=attribute_model, frame=frame)
+    # This part remains the same: get all detected faces
+    faces = process_frame(detection_model=detection_model, attribute_model=attribute_model, frame=frame)
+
+    if faces:
+        # Create a list of embeddings for every detected face
+        embeddings = [emb_model.get(img=frame, kps=face.kps) for face in faces]
+
+        # Call the new, smarter recognition function with the list of embeddings
+        person_id, best_similarity = face_recognizer.recognize_and_assign(embeddings)
+
+        if person_id:
+            print(f"Final assignment: Person ID {person_id} with similarity: {best_similarity:.4f}")
+            face_recognizer.save_image(
+                person_id=person_id,
+                original_img=frame,
+                basename=f"{person_id}_{best_similarity:.4f}"
+            )
+
+    # Save the output image with all face boxes drawn on it
     if save_output:
         cv2.imwrite(save_output, frame)
-    if face is not None:
-        x1, y1, x2, y2 = map(int, face.bbox)
-        x1 = x1-5
-        x2 = x2+5
-        y1 = y1-5
-        y2 = y2+5
-        width = x2 - x1
-        height = y2 - y1
-        print(width, height)
-        #cropped = frame[y1:y2, x1:x2]
-        #save_output = save_output.removesuffix(".jpg")
-        #cv2.imwrite(save_output+"_crop.jpg", cropped)
-        #TODO: check when 2 people are in the image
-        face_embeddings = emb_model.get(img=frame, kps=face.kps)
-        person_id, Distance = face_recognizer.assign(embedding=face_embeddings, face_gender=face.gender)
-        print(f"Person ID: {person_id}")
-        face_recognizer.save_image(person_id=person_id, original_img=frame, basename=f"{person_id}_{Distance}")
-
 
 def process_frame(detection_model, attribute_model, frame):
-    """Detects faces and attributes in a frame and draws the information.
-    Args:
-        detection_model (SCRFD): The face detection model.
-        attribute_model (Attribute): The attribute detection model.
-        frame (np.ndarray): The image frame to process.
-    """
+    """Detects all faces in a frame, draws info, and returns a list of Face objects."""
     boxes_list, points_list = detection_model.detect(frame)
+
+    # Create an empty list to store face objects
+    detected_faces = []
 
     for boxes, keypoints in zip(boxes_list, points_list):
         *bbox, conf_score = boxes
         gender = attribute_model.get(frame, bbox)
         face = Face(kps=keypoints, bbox=bbox, gender=gender)
+
+        # Draw info for the current face
         draw_face_info(frame=frame, face=face)
 
-        return face
+        # Add the processed face to our list
+        detected_faces.append(face)
+
+    # Return the entire list of faces
+    return detected_faces
 
 
 def run_face_analysis(detection_weights, attribute_weights, emb_weights, frame, save_output, face_recognizer):
