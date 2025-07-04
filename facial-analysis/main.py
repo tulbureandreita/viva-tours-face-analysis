@@ -8,8 +8,8 @@ from utils.FaissRecognizer import FaissRecognizer
 
 
 warnings.filterwarnings("ignore")
-run_number = 9
-FACE_RECOGNIZER_THRESHOLD = 0.417
+run_number = 2
+FACE_RECOGNIZER_THRESHOLD = 0.506
 MAX_SIDE_FOR_DETECTION = 2560
 
 def load_models(detection_model_path: str, attribute_model_path: str, emb_model_path: str):
@@ -112,9 +112,9 @@ def resize_with_aspect(img, max_side):
     return resized, scale, scale
 
 def main():
-    detection_weights_path = "weights/det_10g.onnx"
+    detection_weights_path = "weights/scrfd_10g_bnkps.onnx"
     attribute_weights_path = "weights/genderage.onnx"
-    emb_weights_path = "weights/w600k_r50.onnx"
+    emb_weights_path = "weights/glintr100.onnx"
 
     folder_name = "assets/dev-images/"
     dir_path = f"results/{run_number}/"
