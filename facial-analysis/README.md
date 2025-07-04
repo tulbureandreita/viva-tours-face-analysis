@@ -26,6 +26,10 @@ cd facial-analysis
 pip install -r requirements.txt
 ```
 
+3. Download weights from GDRIVE (link in Doc)
+
+4. Add images in assets/dev-images or the image place of your choice
+
 
 
 ## Usage

@@ -8,9 +8,9 @@ import json
 
 class FaissRecognizer:
     def __init__(self, dir_path: str, threshold: float, sdim: int = 512):
-        # Base index for L2; wrap in IDMap so we control the IDs
-        # IDMap wraps IndexFlatL2 so we can use our own integer IDs
-        flat = faiss.IndexFlatL2(sdim)
+        # Use IndexFlatIP for cosine similarity.
+        # IDMap wraps IndexFlatIP so we can use our own integer IDs
+        flat = faiss.IndexFlatIP(sdim)
         self.index = faiss.IndexIDMap(flat)
         self.next_id = 0
         self.dir_path = dir_path
@@ -20,19 +20,22 @@ class FaissRecognizer:
         self.id_to_uuid = {}
         self.uuid_to_id = {}
         # Load existing index and map if present
-        #self._load()
+        # self._load()
 
     def assign(self, embedding: np.ndarray, face_gender) -> uuid.uuid4():
-        x = embedding.astype('float32').reshape(1,-1)
-        Distance = 0.0
+        x = embedding.astype('float32').reshape(1, -1)
+        # For cosine similarity, a higher value means more similar.
+        Similarity = 0.0
         print(self.index.ntotal, "persons in index")
         if self.index.ntotal > 0:
-            Distance, Index = self.index.search(x, 1)
-            print(f"NN dist={Distance[0, 0]}, (thr={self.threshold})")
-            #TODO: implement gender check
-            if Distance[0, 0] < self.threshold: #and face_gender = person.gender:
+            # The search will return the inner product (cosine similarity).
+            Similarity, Index = self.index.search(x, 1)
+            print(f"NN similarity={Similarity[0, 0]}, (thr={self.threshold})")
+            # We check if the similarity is GREATER than the threshold.
+            if Similarity[0, 0] > self.threshold:
                 internal_id = int(Index[0, 0])
-                return self.id_to_uuid[internal_id], Distance
+                return self.id_to_uuid[internal_id], Similarity
+
         internal_id = self.next_id
         person_uuid = str(uuid.uuid4())
 
@@ -44,9 +47,9 @@ class FaissRecognizer:
         # make folder for them
         os.makedirs(os.path.join(self.dir_path, f"{person_uuid}"), exist_ok=True)
         # to implement saving the index and map after adding a new person/ persistence
-        #self._save() # Save index and map after adding a new person if you need persistence
+        # self._save() # Save index and map after adding a new person if you need persistence
 
-        return person_uuid, Distance
+        return person_uuid, Similarity
 
     def save_image(self, person_id: str, original_img: np.ndarray, basename: str):
         out_path = os.path.join(self.dir_path, f"{person_id}", f"{basename}.jpg")
@@ -62,7 +65,7 @@ class FaissRecognizer:
             for internal_id, person_uuid in self.id_to_uuid.items():
                 iid = int(internal_id)
                 self.uuid_to_id[person_uuid] = iid
-                self.next_id = max(self.next_id, iid+1)
+                self.next_id = max(self.next_id, iid + 1)
 
     def _save(self):
         # Save FAISS index

@@ -9,8 +9,8 @@ from utils.FaissRecognizer import FaissRecognizer
 
 
 warnings.filterwarnings("ignore")
-run_number = 24
-FACE_RECOGNIZER_THRESHOLD = 1.1
+run_number = 2
+FACE_RECOGNIZER_THRESHOLD = 0.7
 
 def load_models(detection_model_path: str, attribute_model_path: str, emb_model_path: str):
     """Loads the detection and attribute models.
@@ -118,7 +118,7 @@ def main():
     attribute_weights_path = "weights/genderage.onnx"
     emb_weights_path = "weights/w600k_r50.onnx"
 
-    folder_name = "assets/dev-images2/"
+    folder_name = "assets/dev-images/"
     dir_path = f"results/{run_number}/"
     if not os.path.exists(f"results/{run_number}"):
         os.makedirs(f"results/{run_number}")
