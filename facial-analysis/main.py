@@ -8,7 +8,7 @@ from utils.FaissRecognizer import FaissRecognizer
 
 
 warnings.filterwarnings("ignore")
-run_number = 4
+run_number = 8
 FACE_RECOGNIZER_THRESHOLD = 0.506
 MAX_SIDE_FOR_DETECTION = 2560
 

@@ -9,21 +9,28 @@ class FaissRecognizer:
     def __init__(self, dir_path: str, threshold: float, sdim: int = 512):
         self.dir_path = dir_path
         self.threshold = threshold
-        # Define paths for the persistent files
-        self.index_path = "faiss.index"
-        self.map_path = "id_map.json"
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        # Get the parent directory (.../facial-analysis)
+        parent_dir = os.path.dirname(script_dir)
 
-        # Attempt to load an existing index and map
+        # Create absolute paths in the parent directory
+        self.index_path = os.path.join(parent_dir, "faiss.index")
+        self.map_path = os.path.join(parent_dir, "id_map.json")
+
+        # Initialize attributes before loading
+        self.index = None
+        self.next_id = 0
+        self.id_to_uuid = {}
+        self.uuid_to_id = {}
+
+        # attempt loading
         self._load()
 
         # If loading fails or no index exists, initialize a new one
-        if not hasattr(self, 'index'):
+        if self.index is None:
             print("Initializing a new FAISS index.")
             flat = faiss.IndexFlatIP(sdim)
             self.index = faiss.IndexIDMap(flat)
-            self.next_id = 0
-            self.id_to_uuid = {}
-            self.uuid_to_id = {}
 
     def recognize_and_assign(self, embeddings: list[np.ndarray]):
         """
