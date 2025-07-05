@@ -72,7 +72,7 @@ class FaissRecognizer:
 
         x = embedding.astype('float32').reshape(1, -1)
         self.index.add_with_ids(x, np.array([internal_id], dtype='int64'))
-        self.id_to_uuid[internal_id] = person_uuid
+        self.id_to_uuid[str(internal_id)] = person_uuid
         self.uuid_to_id[person_uuid] = internal_id
         self.next_id += 1
 
