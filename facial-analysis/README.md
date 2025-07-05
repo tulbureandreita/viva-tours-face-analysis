@@ -31,7 +31,7 @@ pip install -r requirements.txt
 4. Add images in assets/dev-images or the image place of your choice
 
 5. Mock for Raspberry pi to send image and test
-
+   (you can also test the Endpoint with POSTMAN)
 # using the python-multipart library for file uploads!
 import requests
 import time
