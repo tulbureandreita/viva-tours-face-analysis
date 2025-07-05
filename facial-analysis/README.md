@@ -4,6 +4,9 @@
 
 This repository contains functionalities for face detection, age and gender classification, face recognition, and facial landmark detection. It supports inference from an image or webcam/video sources.
 
+WEIGHTS: https://drive.google.com/drive/folders/1qwL-rm9c5W4D6UaJjdBJ8kJznuwLBl3w
+
+
 ## Features
 
 - [x] **Face Detection**: Utilizes [Sample and Computation Redistribution for Efficient Face Detection](https://arxiv.org/abs/2105.04714) (SCRFD) for efficient and accurate face detection.
