@@ -32,6 +32,21 @@ pip install -r requirements.txt
 
 5. Mock for Raspberry pi to send image and test
    (you can also test the Endpoint with POSTMAN)
+
+# First, please, start the FASTAPI server on the machine with,
+uvicorn api_main:app --host 0.0.0.0 --port 8000
+
+# If you use postman:
+Open Postman and create a new request with the following settings:
+
+Method: Set the HTTP method to POST.
+
+URL: Enter the URL for your endpoint. If you are testing from the same machine, it will be: http://localhost:8000/upload_image/
+ 
+Then set up the rest of the request Body from the Body Tab and add image to the form-data radio (key values). Change Key to File. Then in the same row type file into the KEY input box. Must match the argument name in your @app.post function
+
+Then click the SELECT FILES button that will appear in your VALUES column
+
 # using the python-multipart library for file uploads!
 import requests
 import time
