@@ -7,9 +7,6 @@ import json
 
 class FaissRecognizer:
     def __init__(self, dir_path: str, threshold: float, sdim: int = 512):
-        flat = faiss.IndexFlatIP(sdim)
-        self.index = faiss.IndexIDMap(flat)
-        self.next_id = 0
         self.dir_path = dir_path
         self.threshold = threshold
         # Define paths for the persistent files
@@ -19,8 +16,14 @@ class FaissRecognizer:
         # Attempt to load an existing index and map
         self._load()
 
-        self.id_to_uuid = {}
-        self.uuid_to_id = {}
+        # If loading fails or no index exists, initialize a new one
+        if not hasattr(self, 'index'):
+            print("Initializing a new FAISS index.")
+            flat = faiss.IndexFlatIP(sdim)
+            self.index = faiss.IndexIDMap(flat)
+            self.next_id = 0
+            self.id_to_uuid = {}
+            self.uuid_to_id = {}
 
     def recognize_and_assign(self, embeddings: list[np.ndarray]):
         """
@@ -56,7 +59,7 @@ class FaissRecognizer:
         # Decision: Is the best match good enough?
         if best_overall_similarity > self.threshold:
             # Yes, it's a match. Return the existing person's UUID.
-            person_uuid = self.id_to_uuid[best_match_internal_id]
+            person_uuid = self.id_to_uuid[str(best_match_internal_id)]
             return person_uuid, best_overall_similarity
         else:
             # No, no good match found. Create a new person using the first embedding.
