@@ -47,6 +47,8 @@ Then set up the rest of the request Body from the Body Tab and add image to the 
 
 Then click the SELECT FILES button that will appear in your VALUES column
 
+! On the Raspberry Pi client you need to have requests installed as a Python lib!
+
 # using the python-multipart library for file uploads!
 import requests
 import time
