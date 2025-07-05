@@ -30,9 +30,62 @@ pip install -r requirements.txt
 
 4. Add images in assets/dev-images or the image place of your choice
 
+5. Mock for Raspberry pi to send image and test
+
+# using the python-multipart library for file uploads!
+import requests
+import time
+
+# --- Configuration ---
+# 1. Replace with the actual IP address of the computer running your FastAPI server.
+#    You can find this by running `ipconfig` on Windows or `ifconfig` / `ip addr` on Linux/macOS.
+SERVER_IP = "192.168.1.105" # Example: "192.168.1.105"
+SERVER_PORT = 8000
+
+# 2. Set the full path to the image you want to upload.
+IMAGE_PATH = "/home/pi/images/slide_photo_001.jpg" # Example path on a Raspberry Pi
+
+# Construct the full API endpoint URL
+API_URL = f"http://{SERVER_IP}:{SERVER_PORT}/upload_image/"
+
+# --- Main Upload Logic ---
+print(f"Attempting to upload {IMAGE_PATH} to {API_URL}")
+
+try:
+    # Open the image file in binary read mode ('rb')
+    with open(IMAGE_PATH, "rb") as image_file:
+        
+        # Prepare the file for the multipart/form-data request.
+        # The key 'file' must match the name of the argument in your FastAPI endpoint.
+        # The tuple contains: (filename, file_object, content_type)
+        files_to_upload = {
+            "file": (os.path.basename(IMAGE_PATH), image_file, "image/jpeg")
+        }
+
+        # Send the POST request
+        start_time = time.time()
+        response = requests.post(API_URL, files=files_to_upload, timeout=30) # 30-second timeout
+        end_time = time.time()
+        
+        # Check if the request was successful
+        response.raise_for_status()
+
+        print("\n✅ Upload successful!")
+        print(f"   - Time taken: {end_time - start_time:.2f} seconds")
+        print(f"   - Server response: {response.json()}")
+
+except FileNotFoundError:
+    print(f"❌ ERROR: The file was not found at {IMAGE_PATH}")
+except requests.exceptions.RequestException as e:
+    print(f"❌ ERROR: Could not connect to the server. {e}")
+
+
 
 
 ## Usage
+
+
+
 
 ```bash
 python main.py 
