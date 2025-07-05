@@ -12,8 +12,13 @@ class FaissRecognizer:
         self.next_id = 0
         self.dir_path = dir_path
         self.threshold = threshold
+        # Define paths for the persistent files
         self.index_path = "faiss.index"
         self.map_path = "id_map.json"
+
+        # Attempt to load an existing index and map
+        self._load()
+
         self.id_to_uuid = {}
         self.uuid_to_id = {}
 
@@ -71,6 +76,9 @@ class FaissRecognizer:
         os.makedirs(os.path.join(self.dir_path, f"{person_uuid}"), exist_ok=True)
         print(f"No good match found. Creating new person with ID: {person_uuid}")
 
+        # Save the updated index and map every time a new person is added
+        self._save()
+
         # When a new person is created, the similarity is effectively 1.0 to itself,
         # but returning 0.0 indicates it's a new entry.
         return person_uuid, 0.0
@@ -78,3 +86,41 @@ class FaissRecognizer:
     def save_image(self, person_id: str, original_img: np.ndarray, basename: str):
         out_path = os.path.join(self.dir_path, f"{person_id}", f"{basename}.jpg")
         cv2.imwrite(out_path, original_img)
+
+    def _load(self):
+        """Loads the index and map from disk if they exist."""
+        if os.path.exists(self.index_path) and os.path.exists(self.map_path):
+            try:
+                print(f"Loading FAISS index from {self.index_path}")
+                self.index = faiss.read_index(self.index_path)
+
+                print(f"Loading ID map from {self.map_path}")
+                with open(self.map_path, 'r') as f:
+                    self.id_to_uuid = json.load(f)
+
+                # Rebuild the reverse map and find the next available ID
+                self.uuid_to_id = {v: int(k) for k, v in self.id_to_uuid.items()}
+                if self.id_to_uuid:
+                    self.next_id = max(int(k) for k in self.id_to_uuid.keys()) + 1
+                else:
+                    self.next_id = 0
+                print("Successfully loaded persistent data.")
+            except Exception as e:
+                print(f"Failed to load persistent data: {e}. Starting fresh.")
+                # Clear potentially partially loaded data
+                delattr(self, 'index') if hasattr(self, 'index') else None
+        else:
+            print("No persistent data found. Starting fresh.")
+
+
+    def _save(self):
+        """Saves the index and map to disk."""
+        try:
+            print(f"Saving FAISS index to {self.index_path}")
+            faiss.write_index(self.index, self.index_path)
+
+            print(f"Saving ID map to {self.map_path}")
+            with open(self.map_path, 'w') as f:
+                json.dump(self.id_to_uuid, f, indent=4)
+        except Exception as e:
+            print(f"Failed to save persistent data: {e}")
