@@ -50,7 +50,7 @@ def process_image_for_best_match(image: np.ndarray):
         # First, get embeddings for all detected faces
         for boxes, keypoints in zip(boxes_list, points_list):
             *bbox, conf_score = boxes
-            embedding = EMB_MODEL.get(img=image, face_bbox=bbox)
+            embedding = EMB_MODEL.get(img=image, kps=keypoints)
             all_embeddings.append(embedding)
 
         # Now, find the best match among all embeddings
